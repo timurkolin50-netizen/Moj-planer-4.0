@@ -17,7 +17,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Создать структуру Android проекта
+      - name: Подготовить Android проект
         shell: bash
         run: |
           set -e
@@ -32,6 +32,34 @@ jobs:
           cp index.html app/src/main/assets/index.html
           cp ic_life.xml app/src/main/res/drawable/ic_life.xml
           cp styles.xml app/src/main/res/values/styles.xml
+
+          cat > settings.gradle.kts <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+
+          rootProject.name = "LIFE"
+          include(":app")
+          EOF
+
+          cat > build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application") version "8.7.3" apply false
+              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+          }
+          EOF
 
           cat > app/build.gradle.kts <<'EOF'
           plugins {
@@ -68,8 +96,7 @@ jobs:
           EOF
 
       - name: Создать Gradle Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.9
+        run: gradle wrapper --gradle-version 8.9
 
       - name: Собрать LIFE APK
         run: |
